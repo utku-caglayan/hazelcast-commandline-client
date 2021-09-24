@@ -19,9 +19,10 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/spf13/cobra"
+
 	clusterDir "github.com/hazelcast/hazelcast-commandline-client/commands/cluster"
 	mapDir "github.com/hazelcast/hazelcast-commandline-client/commands/types/map"
-	"github.com/spf13/cobra"
 )
 
 const DefaultConfigFile = ".hzc.yaml"
@@ -32,7 +33,7 @@ var (
 	cluster   string
 	token     string
 	rootCmd   = &cobra.Command{
-		Use:   "hz-cli {cluster | help | map} [--address address | --cloud-token token | --cluster-name name | --config config]",
+		Use:   "hzc {cluster | help | map} [--address address | --cloud-token token | --cluster-name name | --config config]",
 		Short: "Hazelcast command-line client",
 		Long:  "Hazelcast command-line client connects your command-line to a Hazelcast cluster",
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -52,7 +53,7 @@ func decorateRootCommand(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVarP(&addresses, "address", "a", "", "addresses of the instances in the cluster.")
 	cmd.PersistentFlags().StringVarP(&cluster, "cluster-name", "n", "", "name of the cluster that contains the instances.")
 	cmd.PersistentFlags().StringVar(&token, "cloud-token", "", "your Hazelcast Cloud token.")
-	cmd.CompletionOptions.DisableDefaultCmd = true
+	cmd.CompletionOptions.DisableDefaultCmd = false
 }
 
 func init() {
