@@ -81,7 +81,8 @@ func (co CobraPrompt) Run(ctx context.Context) {
 	co.GoPromptOptions = append(co.GoPromptOptions, prompt.OptionAddKeyBind(prompt.KeyBind{
 		Key: prompt.ControlC,
 		Fn: func(_ *prompt.Buffer) {
-			exitPromptSafely()
+			//exitPromptSafely()
+			os.Exit(0)
 		},
 	}))
 	if co.RootCmd == nil {
