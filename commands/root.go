@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"strings"
 
 	"github.com/c-bata/go-prompt"
@@ -98,12 +97,6 @@ func Execute() {
 }
 
 func ExecuteInteractive() {
-	defer func() {
-		rawModeOff := exec.Command("/bin/stty", "-raw", "echo")
-		rawModeOff.Stdin = os.Stdin
-		_ = rawModeOff.Run()
-		rawModeOff.Wait()
-	}()
 	cobraprompt.RegisterPersistFlag(RootCmd)
 	// parse global persistent flags
 	if err := RootCmd.ParseFlags(os.Args); err != nil {
