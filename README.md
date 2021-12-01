@@ -1,9 +1,18 @@
 # Hazelcast CLC
 
-## Download & Install
+## Installation
+There are two ways you can install command line client:
+* With [Homebrew Package Manager](https://brew.sh) [Recommended]
+
+* With custom installation
+
+| Install:                                                                                                        | Uninstall:                                       |
+| ------------------------------------------------------------------------------------------------------------    | -----------------------------------------------  |
+| `curl https://raw.githubusercontent.com/hazelcast/hazelcast-commandline-client/main/scripts/install.sh \| bash` | `sudo port selfupdate && sudo port upgrade gh`   |
 
 ### With Brew [Recommended]
-Hazelcast CLC is distributed via [Homebrew Package Manager](https://brew.sh).
+Hazelcast CLC is distributed via .
+
 ```
 brew tap utku-caglayan/hazelcast-clc
 brew install hazelcast-commandline-client
@@ -36,7 +45,7 @@ cd hazelcast-commandline-client
 go build -o hzc github.com/hazelcast/hazelcast-commandline-client
 ```
 
-## Running
+## Usage
 
 Make sure a Hazelcast 4 or Hazelcast 5 cluster is running.
 
