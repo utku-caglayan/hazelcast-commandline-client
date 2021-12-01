@@ -5,10 +5,44 @@ There are two ways you can install command line client:
 * With [Homebrew Package Manager](https://brew.sh) [Recommended]
 
 * With custom installation
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;}
+.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+</style>
+<table class="tg">
+<thead>
+  <tr>
+    <th class="tg-0pky">Installation Method</th>
+    <th class="tg-0pky">Install</th>
+    <th class="tg-0pky">Uninstall</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td class="tg-0pky">Brew [Recommended]</td>
+    <td class="tg-0pky"><pre lang="bash">brew tap utku-caglayan/hazelcast-clc
+brew install hazelcast-commandline-client </pre></td>
+    <td class="tg-0pky"><pre lang="bash">brew uninstall hazelcast-commandline-client
+brew untap utku-caglayan/hazelcast-clc</pre></td>
+  </tr>
+  <tr>
+    <td class="tg-0pky">Custom Script</td>
+    <td class="tg-0pky"></td>
+    <td class="tg-0pky"></td>
+  </tr>
+</tbody>
+</table>
 
-| Install:                                                                                                        | Uninstall:                                       |
-| ------------------------------------------------------------------------------------------------------------    | -----------------------------------------------  |
-| `curl https://raw.githubusercontent.com/hazelcast/hazelcast-commandline-client/main/scripts/install.sh \| bash` | `sudo port selfupdate && sudo port upgrade gh`   |
+
+
+| Installation Method | Install | Uninstall |
+| --- | --- | --- |
+| Brew **[Recommended]** | `brew tap utku-caglayan/hazelcast-clc `
+|  Custom Script       |  `curl https://raw.githubusercontent.com/hazelcast/hazelcast-commandline-client/main/scripts/install.sh \| bash` | `sudo port selfupdate && sudo port upgrade gh`|
 
 ### With Brew [Recommended]
 Hazelcast CLC is distributed via .
