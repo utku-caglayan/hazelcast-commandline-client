@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/c-bata/go-prompt"
@@ -63,6 +64,7 @@ var advancedPrompt = &cobraprompt.CobraPrompt{
 		prompt.OptionTitle("Hazelcast Client"),
 		prompt.OptionLivePrefix(addressAndClusterNamePrefix),
 		prompt.OptionMaxSuggestion(10),
+		prompt.OptionCompletionOnDown(),
 	},
 	OnErrorFunc: func(err error) {
 		// handle error noop to prevent application from crashing
@@ -96,6 +98,12 @@ func Execute() {
 }
 
 func ExecuteInteractive() {
+	defer func() {
+		rawModeOff := exec.Command("/bin/stty", "-raw", "echo")
+		rawModeOff.Stdin = os.Stdin
+		_ = rawModeOff.Run()
+		rawModeOff.Wait()
+	}()
 	cobraprompt.RegisterPersistFlag(RootCmd)
 	// parse global persistent flags
 	if err := RootCmd.ParseFlags(os.Args); err != nil {
