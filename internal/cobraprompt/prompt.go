@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"runtime/debug"
 	"strings"
 
 	"github.com/c-bata/go-prompt"
+	"github.com/chzyer/readline"
 	"github.com/google/shlex"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -150,6 +152,73 @@ func RegisterPersistFlag(co *cobra.Command) {
 		false, "Persist last given value for flags")
 }
 
+type Suggestion struct {
+	Text        string
+	Description string
+}
+
+func findSuggestionsForRL(root *CobraPrompt, excludedFlags []string) func(string) []Suggestion {
+	return func(line string) []Suggestion {
+		args := strings.Fields(line)
+		command := root.RootCmd
+		if found, _, err := command.Find(args); err == nil {
+			command = found
+		}
+		var suggestions []Suggestion
+		bt, lw := SplitOnLastSpace(line)
+		addFlags := func(flag *pflag.Flag) {
+			if stringInSlice(excludedFlags, flag.Name) {
+				return
+			}
+			flagUsage := "--" + flag.Name
+			if strings.HasPrefix(lw, "--") {
+				suggestions = append(suggestions, Suggestion{Text: flagUsage, Description: flag.Usage})
+			} else if (lw == "") || strings.HasPrefix(lw, "-") {
+				if flag.Shorthand != "" {
+					suggestions = append(suggestions, Suggestion{Text: fmt.Sprintf("-%s", flag.Shorthand), Description: fmt.Sprintf("or %s %s", flagUsage, flag.Usage)})
+					return
+				}
+				suggestions = append(suggestions, Suggestion{Text: flagUsage, Description: flag.Usage})
+			}
+		}
+		command.LocalFlags().VisitAll(addFlags)
+		command.InheritedFlags().VisitAll(addFlags)
+		if command.HasAvailableSubCommands() {
+			for _, c := range command.Commands() {
+				if !c.Hidden {
+					suggestions = append(suggestions, Suggestion{Text: c.Name(), Description: c.Short})
+				}
+			}
+		}
+		lw = strings.ToUpper(lw)
+		ret := make([]Suggestion, 0, len(suggestions))
+		for i := range suggestions {
+			c := strings.ToUpper(suggestions[i].Text)
+			if strings.HasPrefix(c, lw) {
+				suggestions[i].Text = bt + suggestions[i].Text
+				ret = append(ret, suggestions[i])
+			}
+		}
+		return ret
+	}
+}
+
+func SplitOnLastSpace(line string) (string, string) {
+	i := strings.LastIndexByte(line, ' ')
+	if i == -1 {
+		return "", line
+	}
+	return line[:i+1], line[i+1:]
+}
+
+func TextBeforeLastSpace(line string) string {
+	i := strings.LastIndexByte(line, ' ')
+	if i == -1 {
+		return line
+	}
+	return line[:i+1]
+}
+
 func findSuggestions(co *CobraPrompt, d *prompt.Document) []prompt.Suggest {
 	command := co.RootCmd
 	args := strings.Fields(d.CurrentLine())
@@ -157,14 +226,7 @@ func findSuggestions(co *CobraPrompt, d *prompt.Document) []prompt.Suggest {
 		command = found
 	}
 	var suggestions []prompt.Suggest
-	persistFlagValues, err := command.Flags().GetBool(PersistFlagValuesFlag)
-	if err != nil {
-		fmt.Println("cannot parse persist flag err: ", err)
-	}
 	addFlags := func(flag *pflag.Flag) {
-		if flag.Changed && !persistFlagValues {
-			flag.Value.Set(flag.DefValue)
-		}
 		if flag.Hidden && !co.ShowHiddenFlags {
 			return
 		}
@@ -172,6 +234,7 @@ func findSuggestions(co *CobraPrompt, d *prompt.Document) []prompt.Suggest {
 			return
 		}
 		flagUsage := "--" + flag.Name
+
 		if strings.HasPrefix(d.GetWordBeforeCursor(), "--") {
 			suggestions = append(suggestions, prompt.Suggest{Text: flagUsage, Description: flag.Usage})
 		} else if (co.SuggestFlagsWithoutDash && d.GetWordBeforeCursor() == "") || strings.HasPrefix(d.GetWordBeforeCursor(), "-") {
@@ -208,4 +271,69 @@ func stringInSlice(slice []string, str string) bool {
 		}
 	}
 	return false
+}
+
+func RunReadLineLoop(ctx context.Context, root *CobraPrompt, flagstoexc []string) {
+	defer handleExit()
+	tempFile, err := os.CreateTemp("", "hzc.tmp")
+	if err != nil {
+		panic(err)
+	}
+	defer os.Remove(tempFile.Name())
+	suggester := findSuggestionsForRL(root, flagstoexc)
+	var completer = readline.NewPrefixCompleter(readline.PcItemDynamic(func(s string) []string {
+		suggestions := suggester(s)
+		var result []string
+		for _, s := range suggestions {
+			result = append(result, s.Text)
+		}
+		return result
+	}))
+	l, err := readline.NewEx(&readline.Config{
+		Prompt:            "\033[31m»\033[0m ",
+		HistoryFile:       tempFile.Name(),
+		AutoComplete:      completer,
+		InterruptPrompt:   "^C",
+		EOFPrompt:         "exit",
+		HistorySearchFold: true,
+	})
+	if err != nil {
+		panic(err)
+	}
+	defer l.Close()
+	for {
+		line, err := l.Readline()
+		if err == readline.ErrInterrupt {
+			if len(line) == 0 {
+				break
+			} else {
+				continue
+			}
+		} else if err == io.EOF {
+			break
+		}
+
+		line = strings.TrimSpace(line)
+		switch {
+		case line == "exit":
+			break
+		case line == "":
+			_, _ = l.WriteStdin([]byte(string([]rune{readline.CharTab})))
+		default:
+			promptArgs, err := shlex.Split(line)
+			if err != nil {
+				fmt.Println("unable to parse commands")
+				return
+			}
+			os.Args = append([]string{os.Args[0]}, promptArgs...)
+			if err := root.RootCmd.ExecuteContext(ctx); err != nil {
+				if errors.Is(err, ErrExit) {
+					exitPromptSafely()
+					return
+				}
+				fmt.Println(err)
+			}
+		}
+	}
+	fmt.Println("finito")
 }

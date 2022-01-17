@@ -123,7 +123,8 @@ func ExecuteInteractive() {
 > map get -k key -m myMap
 > cluster version`
 	RootCmd.Use = ""
-	advancedPrompt.Run(ctx)
+	//advancedPrompt.Run(ctx)
+	cobraprompt.RunReadLineLoop(ctx, advancedPrompt, flagsToExclude)
 }
 
 func decorateRootCommand(cmd *cobra.Command) {
