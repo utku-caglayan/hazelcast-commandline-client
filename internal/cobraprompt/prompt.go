@@ -93,14 +93,15 @@ func (co CobraPrompt) Run(ctx context.Context) {
 	}), prompt.OptionAddKeyBind(prompt.KeyBind{
 		Key: prompt.ControlLeft,
 		Fn: func(b *prompt.Buffer) {
-			spw := b.Document().FindStartOfPreviousWord()
-			b.CursorLeft(b.DisplayCursorPosition() - spw)
+			spw := b.Document().FindStartOfPreviousWordWithSpace()
+			curr := b.DisplayCursorPosition()
+			b.CursorLeft(curr - spw)
 		},
 	}), prompt.OptionAddKeyBind(prompt.KeyBind{
 		Key: prompt.ControlRight,
 		Fn: func(b *prompt.Buffer) {
-			spw := b.Document().FindEndOfCurrentWordWithSpace()
-			b.CursorLeft(spw - b.DisplayCursorPosition())
+			ecw := b.Document().FindEndOfCurrentWordWithSpace()
+			b.CursorRight(ecw - b.DisplayCursorPosition())
 		},
 	}))
 	co.GoPromptOptions = append(co.GoPromptOptions, SuggestionColorOptions...)
