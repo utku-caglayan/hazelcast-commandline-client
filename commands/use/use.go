@@ -26,15 +26,17 @@ import (
 func New() *cobra.Command {
 	cmd := cobra.Command{
 		Use:   "use {map | queue | multimap} {defaultName | --reset}",
-		Short: "set default name for data structures such as map, queue...",
-		Example: "use map m1		#sets the map name to m1 unless explicitly set with --name flag\nuse map --reset 	#resets the behaviour",
+		Short: "sets default name for data structures such as map, queue...",
+		Example: "use map m1		# sets the map name to m1 unless explicitly set with --name flag\n" +
+			"use map --reset 	# resets the behaviour",
 	}
 	// assign subcommands
 	for _, sc := range []string{"map"} {
 		tmp := cobra.Command{
-			Use:     fmt.Sprintf("%s {defaultName | --reset}", sc),
-			Short:   fmt.Sprintf("set default name for %s commands", sc),
-			Example: fmt.Sprintf("use %s m1\nuse %s --reset", sc, sc),
+			Use:   fmt.Sprintf("%s {defaultName | --reset}", sc),
+			Short: fmt.Sprintf("set default name for %s commands", sc),
+			Example: fmt.Sprintf("use %s m1\n"+
+				"use %s --reset", sc, sc),
 			RunE: func(cmd *cobra.Command, args []string) error {
 				persister := common.PersisterFromContext(cmd.Context())
 				if cmd.Flag("reset").Changed {
@@ -42,8 +44,7 @@ func New() *cobra.Command {
 					return nil
 				}
 				if len(args) == 0 {
-					cmd.Printf("Default %s name is not provided\n", sc)
-					return nil
+					return cmd.Help()
 				}
 				if len(args) > 1 {
 					cmd.Println("Provide %s name between \"\" quotes if it contains white space", sc)
