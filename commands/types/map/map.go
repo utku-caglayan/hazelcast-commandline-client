@@ -49,16 +49,8 @@ func New() *cobra.Command {
 			}
 			if err := cmd.Flags().Set("name", val); err != nil {
 				cmd.PrintErrln("cannot set persistent err", err)
-			}
-			if len(args) == 0 {
-				cmd.Println("Default map name is not provided")
 				return nil
 			}
-			if len(args) > 1 {
-				cmd.Println("Provide map name between \"\" quotes if it contains white space")
-				return nil
-			}
-			persister.Set("map", args[0])
 			return nil
 		},
 	}

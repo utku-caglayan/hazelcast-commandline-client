@@ -203,6 +203,7 @@ func findSuggestions(co *CobraPrompt, d *prompt.Document) []prompt.Suggest {
 		command = found
 	}
 	var suggestions []prompt.Suggest
+	lastWord := d.GetWordBeforeCursor()
 	addFlags := func(flag *pflag.Flag) {
 		if flag.Hidden && !co.ShowHiddenFlags {
 			return
@@ -211,9 +212,9 @@ func findSuggestions(co *CobraPrompt, d *prompt.Document) []prompt.Suggest {
 			return
 		}
 		flagUsage := "--" + flag.Name
-		if strings.HasPrefix(d.GetWordBeforeCursor(), "--") {
+		if strings.HasPrefix(lastWord, "--") {
 			suggestions = append(suggestions, prompt.Suggest{Text: flagUsage, Description: flag.Usage})
-		} else if (co.SuggestFlagsWithoutDash && d.GetWordBeforeCursor() == "") || strings.HasPrefix(d.GetWordBeforeCursor(), "-") {
+		} else if (co.SuggestFlagsWithoutDash && lastWord == "") || strings.HasPrefix(lastWord, "-") {
 			if flag.Shorthand != "" {
 				suggestions = append(suggestions, prompt.Suggest{Text: fmt.Sprintf("-%s", flag.Shorthand), Description: fmt.Sprintf("or %s %s", flagUsage, flag.Usage)})
 				return
@@ -223,6 +224,9 @@ func findSuggestions(co *CobraPrompt, d *prompt.Document) []prompt.Suggest {
 	}
 	command.LocalFlags().VisitAll(addFlags)
 	command.InheritedFlags().VisitAll(addFlags)
+	for _, explicitSuggestion := range command.SuggestFor {
+		suggestions = append(suggestions, prompt.Suggest{Text: explicitSuggestion})
+	}
 	if command.HasAvailableSubCommands() {
 		for _, c := range command.Commands() {
 			if !c.Hidden && !co.ShowHiddenCommands {
@@ -237,7 +241,7 @@ func findSuggestions(co *CobraPrompt, d *prompt.Document) []prompt.Suggest {
 	if co.DynamicSuggestionsFunc != nil && annotation != "" {
 		suggestions = append(suggestions, co.DynamicSuggestionsFunc(annotation, d)...)
 	}
-	return prompt.FilterHasPrefix(suggestions, d.GetWordBeforeCursor(), true)
+	return prompt.FilterHasPrefix(suggestions, lastWord, true)
 }
 
 func stringInSlice(slice []string, str string) bool {
