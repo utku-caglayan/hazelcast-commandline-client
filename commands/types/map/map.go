@@ -34,7 +34,7 @@ func New() *cobra.Command {
 		Example: fmt.Sprintf("%s\n%s", MapPutExample, MapGetExample),
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			persister := common.PersisterFromContext(cmd.Context())
-			val, isSet := persister.Get("map")
+			val, isSet := persister.Get("name")
 			if !isSet {
 				return nil
 			}

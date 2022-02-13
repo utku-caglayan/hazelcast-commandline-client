@@ -16,8 +16,6 @@
 package use
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"github.com/hazelcast/hazelcast-commandline-client/commands/common"
@@ -25,36 +23,27 @@ import (
 
 func New() *cobra.Command {
 	cmd := cobra.Command{
-		Use:   "use {map | queue | multimap} {defaultName | --reset}",
-		Short: "set default name for data structures such as map, queue...",
-		Example: "use map m1		#sets the map name to m1 unless explicitly set with --name flag\nuse map --reset 	#resets the behaviour",
-	}
-	// assign subcommands
-	for _, sc := range []string{"map"} {
-		tmp := cobra.Command{
-			Use:     fmt.Sprintf("%s {defaultName | --reset}", sc),
-			Short:   fmt.Sprintf("set default name for %s commands", sc),
-			Example: fmt.Sprintf("use %s m1\nuse %s --reset", sc, sc),
-			RunE: func(cmd *cobra.Command, args []string) error {
-				persister := common.PersisterFromContext(cmd.Context())
-				if cmd.Flag("reset").Changed {
-					persister.Reset(sc)
-					return nil
-				}
-				if len(args) == 0 {
-					cmd.Printf("Default %s name is not provided\n", sc)
-					return nil
-				}
-				if len(args) > 1 {
-					cmd.Println("Provide %s name between \"\" quotes if it contains white space", sc)
-					return nil
-				}
-				persister.Set(sc, args[0])
+		Use:   "use [--reset]",
+		Short: "sets default name for all of the data structures such as map, queue, topic...",
+		Example: "use m1			# sets the default name to m1 unless explicitly set with --name flag\n" +
+			"map get --key k1 	# \"--name m1\" is inferred unless set explicitly\n" +
+			"use --reset		# resets the behaviour",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			persister := common.PersisterFromContext(cmd.Context())
+			if cmd.Flag("reset").Changed {
+				persister.Reset("name")
 				return nil
-			},
-		}
-		tmp.Flags().Bool("reset", false, "unsets the default name for the type")
-		cmd.AddCommand(&tmp)
-	}
+			}
+			if len(args) == 0 {
+				return cmd.Help()
+			}
+			if len(args) > 1 {
+				cmd.Println("Provide default name between \"\" quotes if it contains white space")
+				return nil
+			}
+			persister.Set("name", args[0])
+			return nil
+		}}
+	cmd.Flags().Bool("reset", false, "unsets the default name for the type")
 	return &cmd
 }
