@@ -134,7 +134,7 @@ func (co CobraPrompt) Run(ctx context.Context) {
 			os.Args = append([]string{os.Args[0]}, promptArgs...)
 			if err := co.RootCmd.ExecuteContext(ctx); err != nil {
 				if err.Error() == `required flag(s) "name" not set` {
-					err = fmt.Errorf(`%s. Add it or consider "map use <name>"`, err.Error())
+					err = fmt.Errorf(`%s. Add it or consider "use <name>"`, err.Error())
 				}
 				if errors.Is(err, ErrExit) {
 					exitPromptSafely()
