@@ -166,7 +166,7 @@ func (co CobraPrompt) Run(ctx context.Context, root *cobra.Command, cnfg *hazelc
 			}
 			// re-init command chain every iteration
 			// ignore global flags, they are already parsed
-			root, _ = rootcmd.New(cnfg)
+			root, _ = rootcmd.New(cnfg, os.Stdout)
 			prepareRootCmdForPrompt(co, root)
 			root.SetArgs(promptArgs)
 			root.SetFlagErrorFunc(func(_ *cobra.Command, err error) error {

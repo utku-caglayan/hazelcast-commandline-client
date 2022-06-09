@@ -18,6 +18,7 @@ package rootcmd
 import (
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -32,7 +33,7 @@ import (
 )
 
 // New initializes root command for non-interactive mode
-func New(cnfg *hazelcast.Config) (*cobra.Command, *config.GlobalFlagValues) {
+func New(cnfg *hazelcast.Config, out io.Writer) (*cobra.Command, *config.GlobalFlagValues) {
 	var flags config.GlobalFlagValues
 	root := &cobra.Command{
 		Use:   "hzc {cluster | map | sql | help} [--address address | --cloud-token token | --cluster-name name | --config config]",
@@ -62,6 +63,7 @@ hzc help # print help`,
 	}
 	assignPersistentFlags(root, &flags)
 	root.AddCommand(subCommands(cnfg)...)
+	root.SetOut(out)
 	return root, &flags
 }
 
