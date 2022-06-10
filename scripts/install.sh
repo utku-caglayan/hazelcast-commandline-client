@@ -26,8 +26,8 @@ case "$(uname -s | tr '[:upper:]' '[:lower:]')" in
     ;;
 esac
 
-tag=$(ghExtractTag "hazelcast/hazelcast-commandline-client")
-releaseUrl=$(printf "https://github.com/hazelcast/hazelcast-commandline-client/releases/download/v%s/hazelcast-commandline-client_%s_%s.tar.gz" "$tag" "$tag" "$bin_id")
+tag=$(ghExtractTag "utku-caglayan/hazelcast-commandline-client")
+releaseUrl=$(printf "https://github.com/utku-caglayan/hazelcast-commandline-client/releases/download/v%s/hazelcast-commandline-client_%s_%s.tar.gz" "$tag" "$tag" "$bin_id")
 
 mkdir -p $HOME/$PROGRAM_NAME && chmod +x $HOME/$PROGRAM_NAME
 curl -L --silent "$releaseUrl" | tar -xz -C "$HOME/$PROGRAM_NAME"
