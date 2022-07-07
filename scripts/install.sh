@@ -30,7 +30,7 @@ tag=$(ghExtractTag "hazelcast/hazelcast-commandline-client")
 releaseUrl=$(printf "https://github.com/hazelcast/hazelcast-commandline-client/releases/download/v%s/hazelcast-commandline-client_%s_%s.tar.gz" "$tag" "$tag" "$bin_id")
 
 mkdir -p $HOME/$PROGRAM_NAME && chmod +x $HOME/$PROGRAM_NAME
-curl -L --silent "$releaseUrl" | tar -xz -C "$HOME/$PROGRAM_NAME"
+curl -L --silent "$releaseUrl" | tar -x -C "$HOME/$PROGRAM_NAME"
 
 mkdir -p $HOME/.local/bin
 mv $HOME/$PROGRAM_NAME/$PROGRAM_NAME $HOME/.local/bin
