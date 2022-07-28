@@ -15,7 +15,7 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
-	golang.org/x/sys v0.0.0-20211007075335-d3039528d8ac
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -32,4 +32,5 @@ require (
 require (
 	github.com/muesli/reflow v0.3.0
 	github.com/sahilm/fuzzy v0.1.0
+	golang.org/x/tools v0.1.12 // indirect
 )
