@@ -36,8 +36,10 @@ var InvalidStateErr = errors.New("invalid new state")
 
 //todo add protection for concurrent access
 var (
-	client    *hazelcast.Client
-	sqlDriver *sql.DB
+	client        *hazelcast.Client
+	sqlDriver     *sql.DB
+	ClientVersion string = "v0.1.0"
+	CommitSHA     string
 )
 
 type RESTCall struct {
