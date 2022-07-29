@@ -18,14 +18,6 @@ func New() *cobra.Command {
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 
-			//cmdd := exec.Command("git", "rev-parse", "HEAD")
-			//output, err := cmdd.Output()
-
-			//if err != nil {
-			//	fmt.Println(err.Error())
-			//	return
-			//}
-
 			fmt.Printf("Command Line Client version: %s\n", internal.ClientVersion)
 			fmt.Printf("Latest Git commit hash: %s\n", internal.CommitSHA)
 			fmt.Printf("Go Client version: %s\n", hazelcast.ClientVersion)
