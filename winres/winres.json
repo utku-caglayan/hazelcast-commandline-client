@@ -1,12 +1,7 @@
 {
   "RT_GROUP_ICON": {
-    "APP": {
-      "0000": [
-        "icon256.png",
-        "icon128.png",
-        "icon64.png",
-        "icon16.png"
-      ]
+    "OTHER": {
+      "0000": "hazelcast-icon-flat-sm.png"
     }
   },
   "RT_MANIFEST": {
