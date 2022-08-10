@@ -1,4 +1,4 @@
-.PHONY: build generate-completion test test-cover view-cover
+.PHONY: build generate-completion test test-cover view-cover winres
 
 GIT_COMMIT=$(shell git rev-parse HEAD 2> /dev/null || echo unknown)
 CLC_VERSION=$(shell git describe --tags `git rev-list --tags --max-count=1` || echo UNKNOWN)
@@ -23,3 +23,6 @@ test-cover:
 view-cover:
 	go tool cover -func $(COVERAGE_OUT) | grep total:
 	go tool cover -html $(COVERAGE_OUT) -o coverage.html
+
+winres:
+	go-winres make --product-version=git-tag --file-version=git-tag
