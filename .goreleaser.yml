@@ -46,8 +46,9 @@ brews:
     name: hazelcast-commandline-client
 
     tap:
-      owner: hazelcast
+      owner: utku-caglayan
       name: homebrew-hz
+      branch: hz-clc
 
     # Template for the url which is determined by the given Token (github, gitlab or gitea)
     #
