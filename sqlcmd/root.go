@@ -55,7 +55,7 @@ sql "CREATE MAPPING IF NOT EXISTS myMap (__key VARCHAR, this VARCHAR) TYPE IMAP 
 			q = strings.TrimSpace(q)
 			if len(q) == 0 {
 				// If no queries given, run sql browser
-				p := browser.InitSQLBrowser(driver)
+				p := browser.InitSQLBrowser(driver, cmd.InOrStdin(), cmd.OutOrStdout())
 				if err := p.Start(); err != nil {
 					fmt.Println("could not run sql browser:", err)
 					return err
