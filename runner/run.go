@@ -1,24 +1,10 @@
-/*
- * Copyright (c) 2008-2021, Hazelcast, Inc. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License")
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-package main
+package runner
 
 import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -30,11 +16,40 @@ import (
 	"github.com/hazelcast/hazelcast-commandline-client/config"
 	hzcerrors "github.com/hazelcast/hazelcast-commandline-client/errors"
 	"github.com/hazelcast/hazelcast-commandline-client/internal"
+	cobra_util "github.com/hazelcast/hazelcast-commandline-client/internal/cobra"
 	"github.com/hazelcast/hazelcast-commandline-client/internal/cobraprompt"
 	"github.com/hazelcast/hazelcast-commandline-client/internal/file"
 	goprompt "github.com/hazelcast/hazelcast-commandline-client/internal/go-prompt"
+	"github.com/hazelcast/hazelcast-commandline-client/rootcmd"
 	"github.com/hazelcast/hazelcast-commandline-client/types/mapcmd"
 )
+
+func CLC(programArgs []string, stdin io.Reader, stdout io.Writer, stderr io.Writer) (*config.Config, error) {
+	cfg := config.DefaultConfig()
+	var err error
+	rootCmd, globalFlagValues := rootcmd.New(&cfg.Hazelcast)
+	cobra_util.InitCommandForCustomInvocation(rootCmd, stdin, stdout, stderr, programArgs)
+	if err = UpdateConfigWithFlags(rootCmd, &cfg, programArgs, globalFlagValues); err != nil {
+		return &cfg, err
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	isInteractive := IsInteractiveCall(rootCmd, programArgs)
+	if isInteractive {
+		prompt, err := RunCmdInteractively(ctx, rootCmd, &cfg, globalFlagValues.NoColor)
+		if err != nil {
+			return &cfg, hzcerrors.NewLoggableError(err, "")
+		}
+		prompt.Run()
+		return &cfg, nil
+	}
+	// Since the cluster config related flags has already being parsed in previous steps,
+	// there is no need for second parameter anymore. The purpose is overwriting rootCmd as it is at the beginning.
+	rootCmd, _ = rootcmd.New(&cfg.Hazelcast)
+	cobra_util.InitCommandForCustomInvocation(rootCmd, stdin, stdout, stderr, programArgs)
+	err = RunCmd(ctx, rootCmd)
+	return &cfg, err
+}
 
 func IsInteractiveCall(rootCmd *cobra.Command, args []string) bool {
 	cmd, flags, err := rootCmd.Find(args)
@@ -55,15 +70,15 @@ func IsInteractiveCall(rootCmd *cobra.Command, args []string) bool {
 	return false
 }
 
-func RunCmdInteractively(ctx context.Context, rootCmd *cobra.Command, cnfg *config.Config, noColor bool) {
+func RunCmdInteractively(ctx context.Context, rootCmd *cobra.Command, cnfg *config.Config, noColor bool) (*goprompt.Prompt, error) {
 	cmdHistoryPath := filepath.Join(file.HZCHomePath(), "history")
 	exists, err := file.Exists(cmdHistoryPath)
 	if err != nil {
-		// todo log err once we have logging solution
+		cnfg.Logger.Println("Command history path file does not exist.")
 	}
 	if !exists {
 		if err := file.CreateMissingDirsAndFileWithRWPerms(cmdHistoryPath, []byte{}); err != nil {
-			// todo log err once we have logging solution
+			cnfg.Logger.Printf("Cannot create command history file on %s, history will not be preserved.\n", cmdHistoryPath)
 		}
 	}
 	hConfig := &cnfg.Hazelcast
@@ -90,15 +105,14 @@ func RunCmdInteractively(ctx context.Context, rootCmd *cobra.Command, cnfg *conf
 		},
 		OnErrorFunc: func(err error) {
 			errStr := HandleError(err)
-			rootCmd.Println(errStr)
+			cnfg.Logger.Println(errStr)
 			return
 		},
 		Persister: namePersister,
 	}
 	rootCmd.Println("Connecting to the cluster ...")
 	if _, err := internal.ConnectToCluster(ctx, hConfig); err != nil {
-		rootCmd.Printf("Error: %s\n", err)
-		return
+		return nil, err
 	}
 	var flagsToExclude []string
 	rootCmd.PersistentFlags().VisitAll(func(flag *pflag.Flag) {
@@ -110,11 +124,10 @@ func RunCmdInteractively(ctx context.Context, rootCmd *cobra.Command, cnfg *conf
 	p.FlagsToExclude = flagsToExclude
 	rootCmd.Example = fmt.Sprintf("> %s\n> %s", mapcmd.MapPutExample, mapcmd.MapGetExample) + "\n> cluster version"
 	rootCmd.Use = ""
-	p.Run(ctx, rootCmd, hConfig, cmdHistoryPath)
-	return
+	return p.Init(ctx, rootCmd, hConfig, cnfg.Logger, cmdHistoryPath), nil
 }
 
-func updateConfigWithFlags(rootCmd *cobra.Command, cnfg *config.Config, programArgs []string, globalFlagValues *config.GlobalFlagValues) error {
+func UpdateConfigWithFlags(rootCmd *cobra.Command, cnfg *config.Config, programArgs []string, globalFlagValues *config.GlobalFlagValues) error {
 	// parse global persistent flags
 	subCmd, flags, _ := rootCmd.Find(programArgs)
 	// fall back to cmd.Help, even if there is error

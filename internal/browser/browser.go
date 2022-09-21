@@ -3,6 +3,7 @@ package browser
 import (
 	"database/sql"
 	"fmt"
+	"io"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -314,7 +315,7 @@ func (c controller) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return c, cmd
 }
 
-func InitSQLBrowser(driver *sql.DB) *tea.Program {
+func InitSQLBrowser(driver *sql.DB, in io.Reader, out io.Writer) *tea.Program {
 	var s SeparatorWithProgress
 	textArea := multiline.InitTextArea()
 	table := &table{}
@@ -354,6 +355,8 @@ func InitSQLBrowser(driver *sql.DB) *tea.Program {
 	}, []int{3, -1, 1, -1}), driver}
 	p := tea.NewProgram(
 		c,
+		tea.WithOutput(out),
+		tea.WithInput(in),
 	)
 	return p
 }
