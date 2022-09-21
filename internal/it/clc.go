@@ -97,6 +97,7 @@ func TestCLCInteractiveModeWithCluster(t *testing.T, cluster *TestCluster, args 
 	}()
 	prompt, err := runner.RunCmdInteractively(ctx, rootCmd, &cfg, globalFlagValues.NoColor)
 	require.NoError(t, err)
+	require.NotNil(t, prompt)
 	done := make(chan error, 1)
 	go func() {
 		prompt.Run()
