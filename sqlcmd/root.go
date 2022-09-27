@@ -23,8 +23,8 @@ import (
 	"github.com/spf13/cobra"
 
 	hzcerrors "github.com/hazelcast/hazelcast-commandline-client/errors"
-	"github.com/hazelcast/hazelcast-commandline-client/internal"
 	"github.com/hazelcast/hazelcast-commandline-client/internal/browser"
+	"github.com/hazelcast/hazelcast-commandline-client/internal/connection"
 )
 
 const (
@@ -59,6 +59,7 @@ sql "CREATE MAPPING IF NOT EXISTS myMap (__key VARCHAR, this VARCHAR) TYPE IMAP 
 					fmt.Println("could not run sql browser:", err)
 					return err
 				}
+				// spinner
 				return nil
 			}
 			// If a statement is provided, run it in non-interactive mode
