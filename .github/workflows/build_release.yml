@@ -3,7 +3,7 @@ name: "Release CLC"
 on:
   push:
     tags:
-      - "v*"
+      - "vnonexisttag"
 
 permissions:
   contents: write
