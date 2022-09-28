@@ -42,33 +42,33 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "{#SourceDir}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#SourceDir}\extras\windows\installer\README.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourceDir}\{#MyAppExeName}"; DestDir: "{userappdata}\CLC"; Flags: ignoreversion
+Source: "{#SourceDir}\extras\windows\installer\README.txt"; DestDir: "{userappdata}\CLC"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
 ; update the path for all users
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; \
-    ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}"; \
-    Check: CanAddPath(true, '{app}');
+    ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{userappdata}\CLC"; \
+    Check: CanAddPath(true, '{userappdata}\CLC');
 ; update the path for the current user
 Root: HKCU; Subkey: "Environment"; \
-    ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}"; \
-    Check: CanAddPath(false, '{app}');
+    ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{userappdata}\CLC"; \
+    Check: CanAddPath(false, '{userappdata}\CLC');
 
 [Icons]
 ; Start Menu
-Name: "{autoprograms}\{#MyAppName}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{autoprograms}\{#MyAppName}\README.txt"; Filename: "{app}\README.txt"
+Name: "{autoprograms}\{#MyAppName}\{#MyAppName}"; Filename: "{userappdata}\CLC\{#MyAppExeName}"
+Name: "{autoprograms}\{#MyAppName}\README.txt"; Filename: "{userappdata}\CLC\README.txt"
 Name: "{autoprograms}\{#MyAppName}\Documentation"; Filename: "https://docs.hazelcast.com/hazelcast/latest-dev/clients/clc"
 Name: "{autoprograms}\{#MyAppName}\Get Started with Hazelcast"; Filename: "https://docs.hazelcast.com/hazelcast/latest/getting-started/get-started-cli"
 Name: "{autoprograms}\{#MyAppName}\Survey"; Filename: "https://forms.gle/RdCHAwYayqpcCgft8"
 ; Desktop
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{userappdata}\CLC\{#MyAppExeName}"; Tasks: desktopicon
 
 ; Disabled the option to automatically launch CLC for now...
 ;[Run]
-;Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+;Filename: "{userappdata}\CLC\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 [Code]
 
