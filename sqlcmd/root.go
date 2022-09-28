@@ -46,7 +46,7 @@ sql "CREATE MAPPING IF NOT EXISTS myMap (__key VARCHAR, this VARCHAR) TYPE IMAP 
 					outputType, outputPretty, outputCSV)
 			}
 			ctx := cmd.Context()
-			c, err := internal.ConnectToCluster(ctx, config)
+			c, err := connection.ConnectToCluster(ctx, config)
 			if err != nil {
 				return hzcerrors.NewLoggableError(err, "Cannot get initialize SQL driver")
 			}
